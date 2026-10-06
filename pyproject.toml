@@ -1,0 +1,29 @@
+[project]
+name = "m18"
+version = "0.1.0"
+description = "FastAPI + Streamlit + SQLModel 을 활용한 영화 리뷰 APP"
+readme = "README.md"
+authors = [
+    { name = "joelchoi85", email = "jymania@naver.com" }
+]
+requires-python = ">=3.11.15"
+dependencies = [
+    "fastapi>=0.142.2",
+    "httpx>=0.28.1",
+    "numpy>=2.4.6",
+    "onnx>=1.23.1",
+    "onnxruntime>=1.30.0",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "requests>=2.34.2",
+    "sqlmodel>=0.0.47",
+    "streamlit>=1.65.0",
+    "transformers>=5.18.0",
+]
+
+[project.scripts]
+m18 = "m18:main"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
