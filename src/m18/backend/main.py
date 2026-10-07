@@ -20,7 +20,7 @@ def download_from_huggingface(model_path: str):
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
         # ⚠️ 본인의 Hugging Face 유저네임과 레포지토리 이름으로 꼭 변경하세요!
-        repo_id = "your_hf_username/your_model_repo"
+        repo_id = "joelchoi85/m18-bert-q"
         url = f"https://huggingface.co{repo_id}/resolve/main/model_quantized.onnx"
 
         print("📥 Hugging Face로부터 양자화 모델(122MB) 다운로드를 시작합니다...")
