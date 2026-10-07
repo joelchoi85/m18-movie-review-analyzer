@@ -113,7 +113,7 @@ for movie in page_items:
     is_editing = st.session_state.editing_movie_id == movie_id
 
     with st.expander(
-        f"{movie.get('title', 'No title')} - {movie.get('year', 'unknown')} - {movie.get('genre', 'not classify')} - {'⭐️' * movie.get('rating', 0)}",
+        f"{movie.get('title', 'No title')} - {movie.get('year', 1900)} - {movie.get('genre', 'not classify')} - {'⭐️' * movie.get('rating', 0)}",
         expanded=is_editing,
     ):
         if is_editing:
@@ -164,18 +164,18 @@ for movie in page_items:
                     st.image(movie.get("poster", "None"))
                 with col_detail:
                     st.subheader(movie.get("title", "제목 없음"))
-                    st.write(movie.get("year", "년도 미상"))
+                    st.write(movie.get("year", 1900))
                     st.caption(f"감독: {movie.get('director', '-')}")
                     genres = movie.get("genre").split(",")
                     badge_markdown = " ".join([
                         f":blue-badge[{g.strip()}]" for g in genres
                     ])
-                    rating = movie.get("rating", None)
+                    rating = movie.get("rating", 0)
                     if rating:
                         st.markdown(badge_markdown)
                         stars = "⭐️" * rating
                         st.markdown(
-                            f":orange[{stars}] **({movie.get('vote_count', '~')})**"
+                            f":orange[{stars}] **({movie.get('vote_count', 0)})**"
                         )
 
             with col_button:
