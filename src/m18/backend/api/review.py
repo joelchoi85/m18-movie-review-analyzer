@@ -13,7 +13,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 
 @router.post(
-    "/movies/{m_id}/reviews",
+    "/movies/{m_id}/reviews/",
     response_model=ReviewResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -64,7 +64,7 @@ def create_review(
         )
 
 
-@router.get("/movies/{m_id}/reviews")
+@router.get("/movies/{m_id}/reviews/")
 def read_reviews(
     m_id: int,
     session: SessionDep,
