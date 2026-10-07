@@ -343,9 +343,15 @@ with (
                 sleep(0.3)
                 st.rerun()
             except httpx.HTTPStatusError as exc:
-                error_detail = exc.response.json().get(
-                    "detail", "Unknown Error Occur....ah..."
-                )
-                st.error(f"영화 추가 실패 ({exc.response.status_code}): {error_detail}")
+                try:
+                    error_detail = exc.response.json().get(
+                        "detail", "알 수 없는 에러가 발생했습니다."
+                    )
+                except Exception:
+                    # JSON 파싱이 안 되는 응답(HTML 등)인 경우 응답 텍스트의 앞부분을 출력합니다.
+                    error_detail = exc.response.text[:200]
+
+                st.error(f"영화 추가 실패 ({exc.response.status_code})")
+                st.error(f"상세 내용: {error_detail}")
             except Exception as e:
                 st.error(f"통신 오류: {e!s}")
