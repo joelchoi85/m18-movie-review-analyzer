@@ -1,4 +1,5 @@
 import os
+import threading
 from contextlib import asynccontextmanager
 
 import requests
@@ -21,7 +22,7 @@ def download_from_huggingface(model_path: str):
 
         # ⚠️ 본인의 Hugging Face 유저네임과 레포지토리 이름으로 꼭 변경하세요!
         repo_id = "joelchoi85/m18-bert-q"
-        url = f"https://huggingface.co{repo_id}/resolve/main/model_quantized.onnx"
+        url = f"https://huggingface.co/{repo_id}/resolve/main/model_quantized.onnx"
 
         print("📥 Hugging Face로부터 양자화 모델(122MB) 다운로드를 시작합니다...")
 
@@ -36,19 +37,41 @@ def download_from_huggingface(model_path: str):
             )
 
 
+# 💡 백그라운드에서 실행될 모델 로드 전체 파이프라인
+def bg_model_loader(app: FastAPI, model_path: str):
+    try:
+        # 1. 파일이 없으면 허깅페이스에서 다운로드 (수십 초 소요)
+        download_from_huggingface(model_path)
+
+        # 2. ONNX 인프런스 세션 로드 (수 초 소요)
+        print("💡 [BG] AI Model Loading started in background...")
+        app.state.analyzer = SentimentAnalyzer(model_path=model_path)
+
+        # 3. 완료 플래그 활성화
+        app.state.model_ready = True
+        print("✅ [BG] AI Model Successfully Loaded & Ready!")
+    except Exception as e:
+        print(f"❌ [BG] Background model loading failed: {e}")
+        app.state.model_ready = False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # global sentiment_analyzer
     print("backend 초기화")
-
     init_db()
+
+    # 초기 상태 설정
+    app.state.model_ready = False
+    app.state.analyzer = None
 
     current_dir: str = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(current_dir, "core", "artifacts", "model_quantized.onnx")
-    download_from_huggingface(model_path)
-    print("AI Model Loading...")
-    app.state.analyzer = SentimentAnalyzer(model_path=model_path)
-    print("AI Model Loaded")
+    # 💡 핵심: 모델 다운로드와 로드를 백그라운드 스레드로 던져버리고 lifespan은 즉시 통과!
+    bg_thread = threading.Thread(
+        target=bg_model_loader, args=(app, model_path), daemon=True
+    )
+    bg_thread.start()
 
     yield
 
