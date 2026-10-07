@@ -19,9 +19,7 @@ if root_path not in sys.path:
 # 1. 백엔드 FastAPI를 실행할 함수 정의
 def start_fastapi():
     # src/m18/backend/main.py 안의 'app' 객체를 실행
-    uvicorn.run(
-        "src.m18.backend.main:app", host="127.0.0.1", port=8000, log_level="info"
-    )
+    uvicorn.run("src.m18.backend.main:app", host="0.0.0.0", port=8000, log_level="info")
 
 
 # 2. Streamlit이 리로드되어도 백엔드는 단 한 번만 실행되도록 세션 상태 활용

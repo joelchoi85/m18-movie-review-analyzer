@@ -4,7 +4,7 @@ from typing import Any
 
 import httpx
 
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "http://127.0.0.1:8000/api/v1"
 
 
 def create_movie(
