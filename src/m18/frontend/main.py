@@ -113,7 +113,7 @@ for movie in page_items:
     is_editing = st.session_state.editing_movie_id == movie_id
 
     with st.expander(
-        f"{movie.get('title', 'No title')} - {movie.get('year', 'unknown')} - {movie.get('genre', 'not classify')} - {'⭐️' * movie.get('rating', 'not rated')}",
+        f"{movie.get('title', 'No title')} - {movie.get('year', 'unknown')} - {movie.get('genre', 'not classify')} - {'⭐️' * movie.get('rating', 0)}",
         expanded=is_editing,
     ):
         if is_editing:

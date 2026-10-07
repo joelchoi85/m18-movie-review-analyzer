@@ -3,6 +3,7 @@ import threading
 from contextlib import asynccontextmanager
 
 import requests
+import streamlit as st
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,6 +26,12 @@ def download_from_huggingface(model_path: str):
         url = f"https://huggingface.co/{repo_id}/resolve/main/model_quantized.onnx"
 
         print("📥 Hugging Face로부터 양자화 모델(122MB) 다운로드를 시작합니다...")
+
+        headers = {}
+        if "HF_TOKEN" in st.secrets:
+            headers["Authorization"] = f"Bearer {st.secrets['HF_TOKEN']}"
+
+        response = requests.get(url, headers=headers, stream=True)
 
         response = requests.get(url, stream=True)
         if response.status_code == 200:
