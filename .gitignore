@@ -11,4 +11,4 @@ wheels/
 .env
 .DS_Store
 database.db
-*.onnx
+.gitattributes
