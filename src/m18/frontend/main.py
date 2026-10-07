@@ -1,3 +1,6 @@
+import os
+import sys
+import threading
 from datetime import datetime
 from time import sleep
 from zoneinfo import ZoneInfo
@@ -5,6 +8,32 @@ from zoneinfo import ZoneInfo
 import api_client as api
 import httpx
 import streamlit as st
+import uvicorn
+
+# 프로젝트 루트 경로를 sys.path에 추가 (Streamlit Cloud에서 src 폴더 인식을 위함)
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
+
+# 1. 백엔드 FastAPI를 실행할 함수 정의
+def start_fastapi():
+    # src/m18/backend/main.py 안의 'app' 객체를 실행
+    uvicorn.run(
+        "src.m18.backend.main:app", host="127.0.0.1", port=8000, log_level="info"
+    )
+
+
+# 2. Streamlit이 리로드되어도 백엔드는 단 한 번만 실행되도록 세션 상태 활용
+if "backend_started" not in st.session_state:
+    with st.spinner("백엔드 FastAPI 서버를 구동하고 있습니다..."):
+        # 백그라운드 스레드로 FastAPI 실행
+        api_thread = threading.Thread(target=start_fastapi, daemon=True)
+        api_thread.start()
+
+        # FastAPI 서버가 완전히 켜질 때까지 잠시 대기 (2~3초)
+        sleep(3)
+        st.session_state["backend_started"] = True
 
 tz_seoul = ZoneInfo("Asia/Seoul")
 
