@@ -32,11 +32,11 @@ def download_from_huggingface(model_path: str):
             headers["Authorization"] = f"Bearer {st.secrets['HF_TOKEN']}"
 
         response = requests.get(url, headers=headers, stream=True)
-
-        response = requests.get(url, stream=True)
         if response.status_code == 200:
             with open(model_path, "wb") as f:
-                f.writelines(response.iter_content(chunk_size=8192))
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
             print("✅ AI 모델 파일 다운로드 성공!")
         else:
             raise RuntimeError(
