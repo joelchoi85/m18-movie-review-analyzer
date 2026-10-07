@@ -5,7 +5,6 @@ from datetime import datetime
 from time import sleep
 from zoneinfo import ZoneInfo
 
-import api_client as api
 import httpx
 import streamlit as st
 import uvicorn
@@ -15,11 +14,33 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 if root_path not in sys.path:
     sys.path.insert(0, root_path)
 
+# src/m18/frontend 경로도 추가하여 api_client를 정상 인식하도록 보완
+frontend_path = os.path.dirname(os.path.abspath(__file__))
+if frontend_path not in sys.path:
+    sys.path.insert(0, frontend_path)
+
+import api_client as api
+
 
 # 1. 백엔드 FastAPI를 실행할 함수 정의
 def start_fastapi():
     # src/m18/backend/main.py 안의 'app' 객체를 실행
     uvicorn.run("src.m18.backend.main:app", host="0.0.0.0", port=8000, log_level="info")
+
+
+# 3. 백엔드가 실제로 켜졌는지 헬스체크하는 로직 (무한 sleep 방지)
+def wait_for_backend(timeout=60):
+    start_time = datetime.now()
+    while (datetime.now() - start_time).seconds < timeout:
+        try:
+            # backend/main.py의 root_check ("/") 주소로 확인
+            response = httpx.get("http://127.0.0", timeout=1.0)
+            if response.status_code == 200:
+                return True
+        except httpx.RequestError:
+            pass
+        sleep(2)
+    return False
 
 
 # 2. Streamlit이 리로드되어도 백엔드는 단 한 번만 실행되도록 세션 상태 활용
@@ -29,9 +50,15 @@ if "backend_started" not in st.session_state:
         api_thread = threading.Thread(target=start_fastapi, daemon=True)
         api_thread.start()
 
-        # FastAPI 서버가 완전히 켜질 때까지 잠시 대기 (2~3초)
-        sleep(3)
-        st.session_state["backend_started"] = True
+        # 3초 고정이 아니라, 모델이 다 받아지고 서버가 완전히 켜질 때까지 최대 60초 대기
+        if wait_for_backend(timeout=60):
+            st.session_state["backend_started"] = True
+            st.success("백엔드 서버와 AI 모델 로드가 완료되었습니다!")
+            sleep(1)
+            st.rerun()  # 화면 새로고침하여 원래 화면 띄우기
+        else:
+            st.error("백엔드 서버 구동 시간 초과! 로그를 확인해 주세요.")
+            st.stop()
 
 tz_seoul = ZoneInfo("Asia/Seoul")
 
