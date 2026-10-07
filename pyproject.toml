@@ -19,6 +19,7 @@ dependencies = [
     "sqlmodel>=0.0.47",
     "streamlit>=1.65.0",
     "torch>=2.14.1",
+    "torchvision>=0.29.1",
     "transformers>=5.18.0",
 ]
 
